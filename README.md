@@ -50,4 +50,6 @@ A simple usage example:
       ...
     }
 
+## Features and bugs
 
+Please file feature requests and bugs at the [issue tracker](https://github.com/simon-void/empty_collections/issues).
