@@ -1,0 +1,11 @@
+name: empty_collections
+description: provides empty collection classes with const constructor and access to remove methods (which differs from other unmodifiable implementations)
+version: 0.9.0
+author: Stephan Schröder
+#homepage: https://www.example.com
+
+environment:
+  sdk: '>=1.12.0 <2.0.0'
+
+dev_dependencies:
+  test: '>=0.12.0 <0.13.0'
