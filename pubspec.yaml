@@ -1,7 +1,7 @@
 name: empty_collections
 description: provides empty collection classes with const constructor and access to remove methods (which differs from other unmodifiable implementations)
 version: 1.0.0
-author: Stephan Schröder
+author: Stephan Schröder <simon.void+github@gmail.com>
 homepage: https://github.com/simon-void/empty_collections
 
 environment:
