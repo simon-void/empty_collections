@@ -21,5 +21,3 @@ doc/api/
 *.ipr
 *.iws
 
-# test folder
-example
