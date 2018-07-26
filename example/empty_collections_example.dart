@@ -27,7 +27,7 @@ Set<String> getEnemiesNames({Map<String, String> env: const EmptyMap()}) {
   // Throw away one optinal parameter. [env] may or may not contain it.
   // This wouldn't work with a const {} which by adhering to
   // the "unmodifiable"-contract would throw an exception.
-  String deprecatedValue = env.remove("deprecatedOption");
+  env.remove("deprecatedOption");
 
   if(env.containsKey("serverUrl")) {
     return getEnemiesNamesFromServer(env["serverUrl"]);

@@ -1,4 +1,4 @@
-# empty_collections
+# empty_collections [![Build Status](https://travis-ci.org/simon-void/empty_collections.svg?branch=master)](https://travis-ci.org/simon-void/empty_collections)
 
 The package empty_collections contains **const implementations** for several **collection classes that allow access
 to there remove-functionality**:

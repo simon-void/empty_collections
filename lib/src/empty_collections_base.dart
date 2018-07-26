@@ -3,6 +3,7 @@
 // in the LICENSE file.
 
 import 'dart:collection';
+import 'dart:core';
 import 'dart:math';
 
 //adding some helper functions for throwing common errors
@@ -66,6 +67,10 @@ class EmptyIterable<E> implements Iterable<E> {
   @override
   bool any(bool f(E element)) => false;
 
+  /// Returns itself; because this is already an empty iterable.
+  @override
+  Iterable<R> cast<R>() => this as Iterable<R>;
+
   @override
   bool contains(Object element) => false;
 
@@ -81,7 +86,7 @@ class EmptyIterable<E> implements Iterable<E> {
   /// Returns itself; because this is already an empty iterable.
   /// So there is nothing to expand.
   @override
-  Iterable expand(Iterable f(E element)) => this;
+  Iterable<T> expand<T>(Iterable<T> f(E element)) => this as Iterable<T>;
 
   /// Throws a [StateError];
   /// because there is no such element.
@@ -100,7 +105,11 @@ class EmptyIterable<E> implements Iterable<E> {
 
   /// Returns [initialValue]; because there is nothing to combine.
   @override
-  fold(initialValue, combine(previousValue, E element)) => initialValue;
+  T fold<T>(T initialValue, T combine(T previousValue, E element)) => initialValue;
+
+  /// Returns other; because this Iterator is empty.
+  @override
+  Iterable<E> followedBy(Iterable<E> other) => other;
 
   // Does nothing.
   @override
@@ -138,7 +147,7 @@ class EmptyIterable<E> implements Iterable<E> {
   /// Returns itself; because an empty iterable is an empty iterable
   /// and i can't create type information with a const constructor anyway.
   @override
-  Iterable map(f(E e)) => this;
+  Iterable<T> map<T>(T f(E e)) => EmptyIterable<T>();
 
   /// Throws a [StateError];
   /// because there is no element available.
@@ -153,7 +162,7 @@ class EmptyIterable<E> implements Iterable<E> {
   /// Throws a [StateError];
   /// because there is no such element.
   @override
-  E singleWhere(bool test(E element)) => _throwNoSuchElement();
+  E singleWhere(bool test(E element), {E orElse()}) => _throwNoSuchElement();
 
   /// Throws a RangeError if count is negative.
   /// Returns itself otherwise; because this is already an empty iterable.
@@ -196,12 +205,16 @@ class EmptyIterable<E> implements Iterable<E> {
   @override
   Set<E> toSet() => new Set();
 
+  @override
+  String toString() => "()";
+
   /// Returns itself; because this is already an empty iterable.
   @override
   Iterable<E> where(bool f(E element)) => this;
 
+  /// Returns itself; because this is already an empty iterable.
   @override
-  String toString() => "()";
+  Iterable<T> whereType<T>() => this as Iterable<T>;
 }
 
 /// An empty set that doesn't allow adding-operations.
@@ -219,6 +232,9 @@ class EmptySet<E> extends EmptyIterable<E> implements Set<E> {
   /// operations that add to the collection are disallowed.
   @override
   void addAll(Iterable<E> elements) => _throwNoAddingOps();
+
+  /// returns itself because an empty Sets can switch its containee's type.
+  Set<R> cast<R>() => this as Set<R>;
 
   /// Empty set is already empty. Has no effect.
   @override
@@ -276,6 +292,10 @@ class EmptySet<E> extends EmptyIterable<E> implements Set<E> {
 /// Removing-operations ([remove] and [clear]) are ok,
 /// because the don't modify the contents of an empty map.
 class EmptyMap<K, V> implements Map<K, V> {
+
+  @override
+  Iterable<MapEntry<K, V>> get entries => const EmptyIterable();
+
   @override
   bool get isEmpty => true;
 
@@ -313,6 +333,14 @@ class EmptyMap<K, V> implements Map<K, V> {
     _throwNoAddingOps();
   }
 
+  @override
+  void addEntries(Iterable<MapEntry<K, V>> newEntries) {
+    _throwNoAddingOps();
+  }
+
+  @override
+  Map<RK, RV> cast<RK, RV>() => this as Map<RK, RV>;
+
   /// empty map is empty, so nothing needs to change
   @override
   void clear() {}
@@ -326,10 +354,13 @@ class EmptyMap<K, V> implements Map<K, V> {
   @override
   void forEach(void f(K key, V value)) {}
 
+  @override
+  Map<K2, V2> map<K2, V2>(MapEntry<K2, V2> Function(K key, V value) f) => this as Map<K2, V2>;
+
   /// Throws an [UnsupportedError];
   /// operations that add to the collection are disallowed.
   @override
-  V putIfAbsent(K key, V ifAbsent()) {
+  putIfAbsent(K key, V ifAbsent()) {
     _throwNoAddingOps();
   }
 
@@ -339,7 +370,18 @@ class EmptyMap<K, V> implements Map<K, V> {
   V remove(Object key) => null;
 
   @override
+  void removeWhere(bool Function(K key, V value) predicate) {}
+
+  @override
   String toString() => "{}";
+
+  @override
+  update(K key, V Function(V value) update, {V Function() ifAbsent}) {
+    _throwNoAddingOps();
+  }
+
+  @override
+  void updateAll(V Function(K key, V value) update) {}
 }
 
 /// An empty list that doesn't allow adding-operations.
@@ -349,7 +391,7 @@ class EmptyList<E> extends EmptyIterable<E> implements List<E> {
   const EmptyList();
 
   @override
-  E operator [](int index) {
+  operator [](int index) {
     _throwIndexOutOfBounds(index);
   }
 
@@ -359,6 +401,9 @@ class EmptyList<E> extends EmptyIterable<E> implements List<E> {
   void operator []=(int index, E value) {
     _throwNoAddingOps();
   }
+
+  @override
+  List<E> operator +(List<E> other) => new List.from(other);
 
   /// Throws an [UnsupportedError];
   /// operations that add to the collection are disallowed.
@@ -382,6 +427,8 @@ class EmptyList<E> extends EmptyIterable<E> implements List<E> {
   @override
   Map<int, E> asMap() => const {};
 
+  List<R> cast<R>() => this as List<R>;
+
   /// Does nothing; because this collection is already empty.
   @override
   void clear() {}
@@ -395,19 +442,27 @@ class EmptyList<E> extends EmptyIterable<E> implements List<E> {
     }
   }
 
+  @override
+  set first(E value) {
+    _throwNoAddingOps();
+  }
+
   /// Returns an empty iterable if start and end define the empty range
   /// (are both 0).
   /// Throws a RangeError elsewise.
   @override
   Iterable<E> getRange(int start, int end) {
-    if (start == 0 || end == 0) {
-      return const EmptyIterable();
+    if (start != 0 || end != 0) {
+      _throwRangeOutOfBounds(start, end);
     }
-    _throwRangeOutOfBounds(start, end);
+    return const EmptyIterable();
   }
 
   @override
   int indexOf(E element, [int start = 0]) => -1;
+
+  @override
+  int indexWhere(bool Function(E element) test, [int start = 0]) => -1;
 
   /// Throws an [UnsupportedError];
   /// operations that add to the collection are disallowed.
@@ -424,7 +479,15 @@ class EmptyList<E> extends EmptyIterable<E> implements List<E> {
   }
 
   @override
+  set last(E value) {
+    _throwNoAddingOps();
+  }
+
+  @override
   int lastIndexOf(E element, [int start]) => -1;
+
+  @override
+  int lastIndexWhere(bool Function(E element) test, [int start]) => -1;
 
   /// Throws an [UnsupportedError] because this list is fixed length (to 0).
   @override
@@ -441,14 +504,14 @@ class EmptyList<E> extends EmptyIterable<E> implements List<E> {
 
   /// Throws an [RangeError]; because this list is empty.
   @override
-  E removeAt(int index) {
+  removeAt(int index) {
     _throwIndexOutOfBounds(index);
   }
 
   /// [].removeLast() throws a RangeError so
   /// this implementation throws a RangeError.
   @override
-  E removeLast() {
+  removeLast() {
     _throwNoSuchElement();
   }
 
@@ -515,7 +578,7 @@ class EmptyList<E> extends EmptyIterable<E> implements List<E> {
 /// An empty linked list that doesn't allow adding-operations (like [add]).
 /// Removing-operations (like [remove] and [clear]) are ok,
 /// because the don't modify the contents of an empty linked list.
-class EmptyLinkedList<E extends LinkedListEntry> extends EmptyIterable<E>
+class EmptyLinkedList<E extends LinkedListEntry<E>> extends EmptyIterable<E>
     implements LinkedList<E> {
 
   const EmptyLinkedList();
@@ -571,6 +634,8 @@ class EmptyQueue<E> extends EmptyIterable<E> implements Queue<E> {
   /// operations that add to the collection are disallowed.
   @override
   void addLast(E value) => _throwNoAddingOps();
+
+  Queue<R> cast<R>()=> this as Queue<R>;
 
   /// Does nothing; because this collection is already empty.
   @override

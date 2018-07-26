@@ -6,6 +6,14 @@ import 'dart:collection';
 import 'package:empty_collections/empty_collections.dart';
 import 'package:test/test.dart';
 
+const int _OR_ELSE_INT_RESULT = -99;
+
+class _LinkedListEntry<T> extends LinkedListEntry<_LinkedListEntry<T>> {
+  final T value;
+
+  _LinkedListEntry(this.value);
+}
+
 void main() {
 //  group('ClassUnderTest tests', () {
 //    ClassUnderTest classUnderTest;
@@ -27,8 +35,8 @@ void main() {
     testEmptyIterator();
   });
   group("EmptyIterable tests", () {
-    var emptyIterable = const EmptyIterable();
-    testEmptyIterable(emptyIterable, "base class");
+    var emptyIterable = const EmptyIterable<int>();
+    testEmptyIterable(emptyIterable, "base class", _OR_ELSE_INT_RESULT);
   });
   group("EmptySet tests", () {
     testEmptySet();
@@ -62,34 +70,35 @@ void testEmptyIterator() {
 }
 
 void testEmptySet() {
-  var emptySet = const EmptySet();
+  var emptySet = const EmptySet<int>();
   const name = "EmptySet";
-  testEmptyIterable(emptySet, name);
-  testEmptyBasicCollectionMethods(emptySet, name);
+  testEmptyIterable(emptySet, name, _OR_ELSE_INT_RESULT);
+  testEmptyBasicCollectionMethods(emptySet, name, _OR_ELSE_INT_RESULT);
   testEmptyRemoveRetainWhereCollectionMethods(emptySet, name);
 }
 
 void testEmptyList() {
-  var emptyList = const EmptyList();
+  var emptyList = const EmptyList<int>();
   const name = "EmptyList";
-  testEmptyIterable(emptyList, name);
-  testEmptyBasicCollectionMethods(emptyList, name);
+  testEmptyIterable(emptyList, name, _OR_ELSE_INT_RESULT);
+  testEmptyBasicCollectionMethods(emptyList, name, _OR_ELSE_INT_RESULT);
   testEmptyRemoveRetainWhereCollectionMethods(emptyList, name);
   testOperators(emptyList, name, shouldAccessReturnNull: false, key: 1);
 }
 
 void testEmptyLinkedList() {
-  var emptyLinkedList = const EmptyLinkedList();
+  var emptyLinkedList = const EmptyLinkedList<_LinkedListEntry<int>>();
   const name = "EmptyLinkedList";
-  testEmptyIterable(emptyLinkedList, name);
-  testEmptyBasicCollectionMethods(emptyLinkedList, name);
+  final orElse = new _LinkedListEntry(_OR_ELSE_INT_RESULT);
+  testEmptyIterable(emptyLinkedList, name, orElse);
+  testEmptyBasicCollectionMethods(emptyLinkedList, name, orElse);
 }
 
 void testEmptyQueue() {
-  var emptyQueue = const EmptyQueue();
+  var emptyQueue = const EmptyQueue<int>();
   const name = "EmptyQueue";
-  testEmptyIterable(emptyQueue, name);
-  testEmptyBasicCollectionMethods(emptyQueue, name);
+  testEmptyIterable(emptyQueue, name, _OR_ELSE_INT_RESULT);
+  testEmptyBasicCollectionMethods(emptyQueue, name, _OR_ELSE_INT_RESULT);
   testEmptyRemoveRetainWhereCollectionMethods(emptyQueue, name);
 }
 
@@ -106,11 +115,11 @@ void testEmptyMap() {
     expect(emptyMap.values.length, equals(0));
   });
   test("EmptyMap putIfAbsent() fails", ()  {
-    expect(()=>emptyMap.putIfAbsent(1, ()=>"shouldn't be added"), throws);
+    expect(()=>emptyMap.putIfAbsent(1, ()=>"shouldn't be added"), throwsA(anything));
   });
 }
 
-void testEmptyIterable(Iterable emptyIterable, String className) {
+void testEmptyIterable<T>(Iterable<T> emptyIterable, String className, T orElse) {
   testIsEmpty(emptyIterable, "EmptyIterable ($className)");
   test("EmptyIterable ($className) has empty iterator", () {
     expect(emptyIterable.iterator.moveNext(), isFalse);
@@ -122,7 +131,7 @@ void testEmptyIterable(Iterable emptyIterable, String className) {
     expect(emptyIterable.contains(null), isFalse);
   });
   test("EmptyIterable ($className) can't use elementAt", () {
-    expect(()=>emptyIterable.elementAt(0), throws);
+    expect(()=>emptyIterable.elementAt(0), throwsA(anything));
   });
   test("EmptyIterable ($className) every() is always true", () {
     expect(emptyIterable.every((e)=>false), isTrue);
@@ -131,14 +140,14 @@ void testEmptyIterable(Iterable emptyIterable, String className) {
     expect(emptyIterable.expand((e)=>[e, e]).isEmpty, isTrue);
   });
   test("EmptyIterable ($className) has no first element", () {
-    expect(()=>emptyIterable.first, throws);
+    expect(()=>emptyIterable.first, throwsA(anything));
   });
   test("EmptyIterable ($className) firstWhere() returns orElse()", () {
     expect(
     emptyIterable.firstWhere(
         (e)=>true,
-            orElse: ()=>"orElseResult"),
-    equals("orElseResult")
+            orElse: ()=>orElse),
+    equals(orElse)
   );
   });
   test("EmptyIterable ($className) fold() returns initial value", () {
@@ -158,14 +167,14 @@ void testEmptyIterable(Iterable emptyIterable, String className) {
     expect(emptyIterable.join("-"), equals(""));
   });
   test("EmptyIterable ($className) has no last element", () {
-    expect(()=>emptyIterable.last, throws);
+    expect(()=>emptyIterable.last, throwsA(anything));
   });
   test("EmptyIterable ($className) lastWhere() returns orElse()", () {
     expect(
         emptyIterable.lastWhere(
             (e)=>true,
-            orElse: ()=>"orElseResult"),
-        equals("orElseResult")
+            orElse: ()=>orElse),
+        equals(orElse)
     );
   });
   test("EmptyIterable ($className) has zero length", () {
@@ -177,15 +186,15 @@ void testEmptyIterable(Iterable emptyIterable, String className) {
   });
   test("EmptyIterable ($className) reduce() fails", () {
     expect(
-        ()=>emptyIterable.reduce((first, second)=>"$first-$second"),
-        throws
+        ()=>emptyIterable.reduce((first, second)=>first),
+        throwsA(anything)
     );
   });
   test("EmptyIterable ($className) has no single element", () {
-    expect(()=>emptyIterable.single, throws);
+    expect(()=>emptyIterable.single, throwsA(anything));
   });
   test("EmptyIterable ($className) has no single element with check", () {
-    expect(()=>emptyIterable.singleWhere((e)=>true), throws);
+    expect(()=>emptyIterable.singleWhere((e)=>true), throwsA(anything));
   });
   test("EmptyIterable ($className) can skip ", () {
     expect(emptyIterable.skip(4).length, equals(0));
@@ -201,11 +210,12 @@ void testEmptyIterable(Iterable emptyIterable, String className) {
   });
   test("EmptyIterable ($className) toGrowableList works ", () {
     var growableList = emptyIterable.toList(growable: true);
-    expect(growableList.add(1), anything);
+    growableList.add(orElse);
+    expect(growableList.length, 1);
   });
   test("EmptyIterable ($className) toFixedList works ", () {
     var fixedList = emptyIterable.toList(growable: false);
-    expect(()=>fixedList.add(1), throws);
+    expect(()=>fixedList.add(orElse), throwsA(anything));
   });
   test("EmptyIterable ($className) toSet creates empty set ", () {
     Set emptySet = emptyIterable.toSet();
@@ -218,18 +228,18 @@ void testEmptyIterable(Iterable emptyIterable, String className) {
 
 // disable the type system to test by duck-typing
 void testEmptyBasicCollectionMethods(
-    dynamic emptyBasicCollection, String name) {
+    dynamic emptyBasicCollection, String name, dynamic exampleElem) {
   test("$name add shouldn't work", () {
-    expect(()=>emptyBasicCollection.add(1), throws);
+    expect(()=>emptyBasicCollection.add(exampleElem), throwsA(anything));
   });
   test("$name addAll shouldn't work", () {
-    expect(()=>emptyBasicCollection.add([1, 2]), throws);
+    expect(()=>emptyBasicCollection.add([exampleElem, exampleElem]), throwsA(anything));
   });
   test("$name clear should work", () {
     expect(emptyBasicCollection.clear(), anything);
   });
   test("$name remove shouldn't fail but return false", () {
-    expect(emptyBasicCollection.remove(1), isFalse);
+    expect(emptyBasicCollection.remove(exampleElem), isFalse);
   });
 }
 
@@ -262,7 +272,7 @@ void testOperators(dynamic emptyCollection, String name,
     {bool shouldAccessReturnNull, key}) {
   // []= should always fail
   test("$name []= should fail", () {
-    expect(()=>emptyCollection[key]="element", throws);
+    expect(()=>emptyCollection[key]="element", throwsA(anything));
   });
   //[] fails or returns null
   if(shouldAccessReturnNull) {
@@ -271,7 +281,7 @@ void testOperators(dynamic emptyCollection, String name,
     });
   }else{
     test("$name [$key] should fail", () {
-      expect(()=>emptyCollection[key], throws);
+      expect(()=>emptyCollection[key], throwsA(anything));
     });
   }
 }
